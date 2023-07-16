@@ -13,9 +13,11 @@ const { chains, publicClient } = configureChains(
 const wagmiConfig = createConfig({
     autoConnect: true,
     connectors: [
-        new InjectedConnector({ chains, options: {
-            shimDisconnect: true
-        }}),
+        new InjectedConnector({
+            chains, options: {
+                shimDisconnect: true
+            }
+        }),
         new WalletConnectConnector({
             chains,
             options: {
@@ -41,6 +43,8 @@ const wagmiConfig = createConfig({
 
 const account = ref<Address>()
 const connected = computed(() => !!account.value)
+const isConnecting = ref(false)
+const pendingConnector = shallowRef<typeof wagmiConfig.connectors[number]>()
 const chainId = ref<number | null>()
 const client = shallowRef<PublicClient | null>()
 const walletClient = shallowRef<WalletClient | null>()
@@ -58,7 +62,7 @@ const reloadState = async () => {
 
 export const useWagmi = () => {
     onMounted(() => {
-        const handlers : any[] = [
+        const handlers: any[] = [
             watchAccount(reloadState),
             watchNetwork(reloadState),
         ]
@@ -72,6 +76,10 @@ export const useWagmi = () => {
 
     return {
         connected,
+
+        isConnecting,
+
+        pendingConnector,
 
         account,
 
@@ -88,17 +96,29 @@ export const useWagmi = () => {
 
             account.value = undefined
             chainId.value = undefined
+            isConnecting.value = false
+            pendingConnector.value = undefined
+            walletClient.value = null
+            client.value = null
         },
 
-        connect: async (connector: typeof wagmiConfig.connectors[number]) => {
+        connect: async (connector: typeof wagmiConfig.connectors[number], chainId: number | undefined = undefined) => {
+            pendingConnector.value = connector
+            isConnecting.value = true
 
-            await disconnect();
+            try {
+                await disconnect();
 
-            await connect({
-                connector,
-            })
+                await connect({
+                    connector,
+                    chainId
+                })
 
-            await reloadState()
+                await reloadState()
+            } finally {
+                isConnecting.value = false
+                pendingConnector.value = undefined
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const { connected, connectors, connect, disconnect, account, chainId, walletClient } = useWagmi()
-
+const { connected, isConnecting, pendingConnector, connectors, connect, disconnect, account, chainId, walletClient } = useWagmi()
 
 const sendTx = async () => {
   await walletClient.value!.sendTransaction({
@@ -22,7 +21,7 @@ const sendTx = async () => {
         <div v-for="connector in  connectors" class="flex items-center gap-4">
           {{ connector.name }}
 
-          <UButton @click="connect(connector)">
+          <UButton @click="connect(connector)" :loading="isConnecting && pendingConnector?.id === connector.id">
             Connect
           </UButton>
         </div>
