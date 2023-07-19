@@ -1,7 +1,11 @@
 <script setup lang="ts">
-const { connected, isConnecting, pendingConnector, connectors, connect, disconnect, account, chainId, walletClient } = useWagmi()
+const { connected, isConnecting, pendingConnector, connectors, connect, disconnect, account, chainId, walletClient, switchNetwork } = useWagmi()
 
 const sendTx = async () => {
+  if (chainId.value !== 137) {
+    await switchNetwork(137)
+  }
+
   await walletClient.value!.sendTransaction({
     to: account.value,
     value: 0n,
@@ -28,7 +32,7 @@ const sendTx = async () => {
       </div>
 
       <div v-if="connected" class="mt-4">
-        <UButton  @click="sendTx">Send Empty Tx</UButton>
+        <UButton @click="sendTx">Send Empty Tx</UButton>
       </div>
 
 

@@ -1,4 +1,4 @@
-import { configureChains, createConfig, InjectedConnector, disconnect, watchAccount, getAccount, watchNetwork, getNetwork, getPublicClient, getWalletClient, PublicClient, WalletClient, Address, watchWalletClient, connect } from '@wagmi/core'
+import { configureChains, createConfig, InjectedConnector, disconnect, watchAccount, getAccount, watchNetwork, getNetwork, getPublicClient, getWalletClient, PublicClient, WalletClient, Address, switchNetwork, connect } from '@wagmi/core'
 import { mainnet, polygon, optimism, avalanche, arbitrum, fantom, bsc, aurora, gnosis, polygonZkEvm } from '@wagmi/core/chains'
 import { publicProvider } from '@wagmi/core/providers/public'
 import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect'
@@ -119,6 +119,12 @@ export const useWagmi = () => {
                 isConnecting.value = false
                 pendingConnector.value = undefined
             }
-        }
+        },
+
+        switchNetwork: async (chainId: number) => {
+            await switchNetwork({
+                chainId
+            })
+        },
     }
 }
